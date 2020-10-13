@@ -25,6 +25,7 @@ header{
 }
 #gastos {
     margin-bottom: 30px;
+    color: black;
 }
 .presupuesto p span {
     font-weight: normal;
