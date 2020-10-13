@@ -28,7 +28,12 @@ class Presupuesto {
     calcularRestante(){
         const gastado = this.gastos.reduce((total,gasto) => total + gasto.cantidad,0); //total =+ total+gasto, empieza en cero total. gasto equivale al item de cada iteración de gastos
         this.restante = this.presupuesto-gastado;
-        console.log(this.restante);
+        // console.log(this.restante);
+    }
+    eliminarGasto(id){
+        this.gastos = this.gastos.filter((gasto) => gasto.id !== id );
+        // console.log(this.gastos);
+        this.calcularRestante();
     }
 }
 
@@ -60,7 +65,9 @@ class UI {
             divMensaje.remove();
         },500);
     };
-    agregarGastoListado(gastos){
+
+
+    mostrarGastos(gastos){
         //limpio el gasto previo
         this.limpiarHTML();
 
@@ -80,6 +87,9 @@ class UI {
             // btnBorrar.textContent = 'x';
             btnBorrar.classList.add('btn','btn-danger','borrar-gasto');
             nuevoGasto.appendChild(btnBorrar);
+            btnBorrar.onclick = () => {
+                eliminarGasto(id);
+            }
             //agregar al html
             gastoListado.appendChild(nuevoGasto);
 
@@ -92,6 +102,34 @@ class UI {
         while(gastoListado.firstChild){ //mientras haya algo dentro de gastoListado
             gastoListado.removeChild(gastoListado.firstChild);
         }
+    }
+    comprobarPresupuesto(presupuestoObj){
+        const {presupuesto,restante} = presupuestoObj; //extraigo
+        const restanteDiv = document.querySelector('.restante');
+
+        //comrpobamos el 25%
+        if((presupuesto/4) > restante){ //presupuesto/4 -> 25%
+            //si pasas esto estás gastando más del 75% -> gastas 76 de 100 de presupuesto
+            restanteDiv.classList.remove('alert-success','alert-warning');
+            restanteDiv.classList.add('alert-danger');
+        }else if((presupuesto/2) > restante){
+            //gastas mas de la mitad
+            restanteDiv.classList.remove('alert-success');
+            restanteDiv.classList.add('alert-warning');
+        }
+        //reembolso
+        else{
+            restanteDiv.classList.remove('alert-danger','alert-warning');
+            restanteDiv.classList.add('alert-success');
+        }
+
+        if(restante <= 0){
+            ui.imprimirAlerta('Se ha acabado el presupuesto','error');
+            formulario.querySelector('button[type="submit"]').disabled=true;
+        }
+
+
+
     }
 }
 
@@ -146,10 +184,22 @@ function agregarGasto(e){
     //Imprimir los gastos y actualizar restante
     const {gastos,restante} = presupuesto;
 
-    ui.agregarGastoListado(gastos);
+    ui.mostrarGastos(gastos);
+
     ui.actualizarRestante(restante);
 
+    ui.comprobarPresupuesto(presupuesto); //le paso tod el objeto presupuesto
     formulario.reset(); //reseteamos el formulario
+}
 
+function eliminarGasto(id){
+    //elimina del objeto
+    presupuesto.eliminarGasto(id);
+    //elimina del html
+    const {gastos,restante} = presupuesto;
+    ui.mostrarGastos(gastos);
 
+    ui.actualizarRestante(restante);
+
+    ui.comprobarPresupuesto(presupuesto); //le paso tod el objeto presupuesto
 }
